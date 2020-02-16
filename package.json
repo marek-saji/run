@@ -15,15 +15,9 @@
   "bugs": {
     "url": "https://github.com/marek-saji/run.git/issues"
   },
-  "dirs": {
-    "asset": "./assets",
-    "stylesheet": "./static/stylesheet"
-  },
-  "engines": {
-    "node": "~10.19.0 ~12.16.0 ~13.8.0"
-  },
+  "bin": "./run.sh",
   "scripts": {
-    "test": "echo 'No tests yet'; false",
+    "test": "echo 'No tests yet'",
     "lint": "npm-run-all --parallel --print-name --aggregate-output 'lint:*'",
     "lint:sh": "{ git grep -lE '^#!/bin/(ba|da|k)?sh' ':(exclude)*.*'; git ls-files '*.sh'; } | xargs --no-run-if-empty shellcheck"
   },
@@ -32,6 +26,6 @@
   },
   "devDependencies": {
     "@saji/git-hooks": "^1.0.0",
-    "shellcheck": "^0.4.1
+    "shellcheck": "^0.4.1"
   }
 }
