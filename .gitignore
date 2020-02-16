@@ -1,0 +1,32 @@
+# Local files
+*.local
+*.local.*
+
+# Dependencies
+/node_modules
+
+# Logs
+logs
+*.log
+*-debug.log*
+*-error.log*
+
+# Build artifacts
+/build
+/dist
+
+# Cache
+/.cache
+/.sass-cache
+
+# editors files
+*~
+*.swp
+*.bak
+*.tmp
+Session.vim
+
+# OSes rubbish
+.DS_Store
+Thumbs.db
+Desktop.ini

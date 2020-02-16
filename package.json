@@ -1,0 +1,37 @@
+{
+  "name": "@saji/run",
+  "version": "1.0.0-pre",
+  "author": {
+    "name": "Marek ‘saji’ Augustynowicz",
+    "email": "marek.aug@gmail.com"
+  },
+  "license": "ISC",
+  "description": "Task runner with interactive selection.",
+  "homepage": "https://github.com/marek-saji/run.git",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:marek-saji/run.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marek-saji/run.git/issues"
+  },
+  "dirs": {
+    "asset": "./assets",
+    "stylesheet": "./static/stylesheet"
+  },
+  "engines": {
+    "node": "~10.19.0 ~12.16.0 ~13.8.0"
+  },
+  "scripts": {
+    "test": "echo 'No tests yet'; false",
+    "lint": "npm-run-all --parallel --print-name --aggregate-output 'lint:*'",
+    "lint:sh": "{ git grep -lE '^#!/bin/(ba|da|k)?sh' ':(exclude)*.*'; git ls-files '*.sh'; } | xargs --no-run-if-empty shellcheck"
+  },
+  "dependencies": {
+    "npm-run-all": "^4.1.5"
+  },
+  "devDependencies": {
+    "@saji/git-hooks": "^1.0.0",
+    "shellcheck": "^0.4.1
+  }
+}
