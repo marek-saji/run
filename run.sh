@@ -2,6 +2,9 @@
 # shellcheck disable=SC1111
 set -e
 
+# TODO Accept file as an argument -- either TSV or package.json
+# TODO Use TASKS_TSV only if tasks.tsv is not present
+
 print_help ()
 {
     printf "Task runner with interactive selection.\n\n"
@@ -10,9 +13,17 @@ print_help ()
     printf "Tasks TSV columns are:\n"
     {
         printf "Task name (e.g. Build)\n"
-        printf "Task colour, or “seq“ if it’s ment to run sequentially, before all parallel tasks. (e.g. green)\n"
-        printf "Command to run, or if starts with “+“, a “+“–separated list of task names to run. (e.g. +Test+Build)\n"
+        printf "Task colour, used if running task in paralell outside tmux (e.g. green)\n"
+        printf "Command to run (e.g. make)\n"
     } | nl
+    printf "You can specify “seq“ instead of colour, these tasks will run in sequence before all paralell tasks, in order chosen by the user.\n"
+    printf "You can also specify task presents:\n"
+    {
+        printf "Present name (e.g. Build & Run)\n"
+        printf "A word “preset“\n"
+        printf "Names of the tasks to run, separated by “+” (e.g. Install + Build + Run)\n"
+    } | nl
+    printf "Use #, ; or // for comments.\n"
 }
 
 if [ "$1" = '--help' ] || [ "$1" = '-h' ]
@@ -36,12 +47,15 @@ then
         TASKS_TSV="$( cat "$TASKS_FILE" )"
     else
         TASKS_TSV="$(
+            # TODO Better preview
             npm run |
                 grep -E '^  (  )?[^ ]' |
                 awk -vRS='(^|\n)  \\<' -vORS='\n' -vFS='\n    \\<' '$1 { print $1 "\twhite\tnpm run " $1 " # " $2 }'
         )"
     fi
 fi
+
+TASKS_TSV="$( echo "$TASKS_TSV" | grep -Ev '^\s*(#|;|//|$)' )"
 
 if [ -z "$TASKS_TSV" ]
 then
@@ -97,30 +111,37 @@ exec_cmd ()
 }
 
 
+# TODO Match each arg separately $1, $2… fallback only if some don’t match
+query="$1"
+choice="$( get_line "$TASKS_TSV" "$query" )"
+if [ -z "$choice" ]
+then
+    choice="$(
+        cmds_len="$( echo "$TASKS_TSV" | wc -l )"
+        printf "%s\n" "$TASKS_TSV" |
+            fzf --multi --no-sort --cycle \
+                --query="$*" --select-1 \
+                --layout=reverse --no-info --height=$(( cmds_len + 2 )) \
+                --with-nth=1 --delimiter="\t" \
+                --preview="echo {} | cut -f3-" \
+                --preview-window=:wrap
+    )"
+fi
 
-cmds_len="$( echo "$TASKS_TSV" | wc -l )"
-choice="$(
-    printf "%s\n" "$TASKS_TSV" |
-        fzf --multi --no-sort --cycle \
-            --layout=reverse --no-info --height=$(( cmds_len + 2 )) \
-            --with-nth=1 --delimiter="\t" \
-            --preview="echo {} | cut -f3-" \
-            --preview-window=:wrap
-)"
-
-supertasks_choice_ids="$(
+preset_choice_ids="$(
     echo "$choice" |
-        awk -F'\t' '{ if (substr($3, 1, 1) == "+") print $3 }' |
+        awk -F'\t' '$2 == "preset" { print $3 }' |
         sed 's/\s*+\s*/\n/g' |
         awk '$0 && !seen[$0]++'
 )"
-choice="$( echo "$choice" | awk -F'\t' 'substr($3, 1, 1) != "+"' )"
-if [ -n "$supertasks_choice_ids" ]
+choice="$( echo "$choice" | awk -F'\t' '$2 != "preset"')"
+if [ -n "$preset_choice_ids" ]
 then
+    # FIXME Error on unknown tags
     choice="$(
         {
             echo "$choice"
-            echo "$supertasks_choice_ids" |
+            echo "$preset_choice_ids" |
                 while read -r id
                 do
                     get_line "$TASKS_TSV" "$id"
@@ -139,6 +160,12 @@ rest_lines="$( printf "%s\n" "$choice" | tail -n+2 )"
 if [ -n "$rest_lines" ] && [ -n "$TMUX_PANE" ]
 then
     tmux resize-pane -t "$TMUX_PANE" -y 5
+    if [ -n "$rest_lines" ]
+    then
+        # Select next pane if there are any non–sequencial tasks
+        tmux select-pane -t :.+
+    fi
+
 fi
 
 if [ -n "$choice_seq" ]
@@ -176,10 +203,10 @@ else
         get_cmd "$rest_lines" |
             while read -r cmd
             do
-                tmux split-window -d -t "$TMUX_PANE" -h \
+                tmux split-window -d -t "$TMUX_PANE" -c "$PWD" -h \
                     "$SHELL" -$-xc "$cmd || exec $SHELL -l"
             done
-        tmux select-layout -t "$TMUX_PANE" -E
+        tmux select-layout -t "$TMUX_PANE" -E || :
         tmux resize-pane -t "$TMUX_PANE" -y 5
     fi
 
