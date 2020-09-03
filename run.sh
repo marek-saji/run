@@ -10,19 +10,21 @@ print_help ()
     printf "Task runner with interactive selection.\n\n"
     printf "Run in directory with \`tasks.tsv\` or with \`TASKS_TSV\` environment variable set. Falls back to using npm scripts.\n"
     printf "Use \`tab\` to select multiple tasks. Type to search. \`Enter\` to select.\n"
-    printf "Tasks TSV columns are:\n"
+    printf "Tasks TSV columns are:\n\n"
     {
         printf "Task name (e.g. Build)\n"
         printf "Task colour, used if running task in parallel outside tmux (e.g. green)\n"
         printf "Command to run (e.g. make)\n"
-    } | nl -w3 -s'. '
+    } | nl -w1 -s'. '
+    printf "\n"
     printf "You can specify “seq“ instead of colour, these tasks will run in sequence before all parallel tasks, in order chosen by the user.\n"
-    printf "You can also specify task presents:\n"
+    printf "To specify task presents use:\n\n"
     {
         printf "Present name (e.g. Build & Run)\n"
         printf "A word “preset“\n"
         printf "Names of the tasks to run, separated by “+” (e.g. Install + Build + Run)\n"
-    } | nl -w3 -s'. '
+    } | nl -w1 -s'. '
+    printf "\n"
     printf "Use \`#\`, \`;\` or \`//\` for comments.\n"
 }
 
