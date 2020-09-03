@@ -8,22 +8,22 @@ set -e
 print_help ()
 {
     printf "Task runner with interactive selection.\n\n"
-    printf "Run in directory with tasks.tsv or with TASKS_TSV environment variable set. Falls back to using npm scripts.\n"
-    printf "Run [tab] to select multiple tasks. Type to search. Enter to select.\n"
+    printf "Run in directory with \`tasks.tsv\` or with \`TASKS_TSV\` environment variable set. Falls back to using npm scripts.\n"
+    printf "Use \`tab\` to select multiple tasks. Type to search. \`Enter\` to select.\n"
     printf "Tasks TSV columns are:\n"
     {
         printf "Task name (e.g. Build)\n"
-        printf "Task colour, used if running task in paralell outside tmux (e.g. green)\n"
+        printf "Task colour, used if running task in parallel outside tmux (e.g. green)\n"
         printf "Command to run (e.g. make)\n"
-    } | nl
-    printf "You can specify “seq“ instead of colour, these tasks will run in sequence before all paralell tasks, in order chosen by the user.\n"
+    } | nl -w3 -s'. '
+    printf "You can specify “seq“ instead of colour, these tasks will run in sequence before all parallel tasks, in order chosen by the user.\n"
     printf "You can also specify task presents:\n"
     {
         printf "Present name (e.g. Build & Run)\n"
         printf "A word “preset“\n"
         printf "Names of the tasks to run, separated by “+” (e.g. Install + Build + Run)\n"
-    } | nl
-    printf "Use #, ; or // for comments.\n"
+    } | nl -w3 -s'. '
+    printf "Use \`#\`, \`;\` or \`//\` for comments.\n"
 }
 
 if [ "$1" = '--help' ] || [ "$1" = '-h' ]
