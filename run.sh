@@ -118,12 +118,19 @@ if [ -z "$choice" ]
 then
     choice="$(
         cmds_len="$( echo "$TASKS_TSV" | wc -l )"
+        cat="$( command -v pygmentize || : )"
+        if [ -n "$cat" ]
+        then
+            cat="$cat -l sh"
+        else
+            cat="cat"
+        fi
         printf "%s\n" "$TASKS_TSV" |
             fzf --multi --no-sort --cycle \
                 --query="$*" --select-1 \
                 --layout=reverse --no-info --height=$(( cmds_len + 2 )) \
                 --with-nth=1 --delimiter="\t" \
-                --preview="echo {} | cut -f3-" \
+                --preview="echo {} | cut -f3- | $cat" \
                 --preview-window=:wrap
     )"
 fi
