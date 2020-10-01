@@ -185,6 +185,10 @@ then
             id="$( get_id "$line" )"
             cmd="$( get_cmd "$line" )"
             printf "\n%s\n" "$id"
+            if [ "$TMUX_PANE" ]
+            then
+                printf "\033]2;%s…\033\\" "$id"
+            fi
             exec_cmd "$line"
         done
 fi
@@ -209,15 +213,19 @@ then
 else
     if [ -n "$rest_lines" ]
     then
-        get_cmd "$rest_lines" |
-            while read -r cmd
+        printf "%s" "$rest_lines" |
+            while read -r line
             do
+                id="$( get_id "$line" )"
+                cmd="$( get_cmd "$line" )"
                 tmux split-window -d -t "$TMUX_PANE" -c "$PWD" -h \
-                    "$SHELL" -$-xc "$cmd || exec $SHELL -l"
+                    "$SHELL" -$-xc "printf \"\033]2;%s\033\\\\\" '$id' ; $cmd || exec $SHELL -l"
             done
         tmux select-layout -t "$TMUX_PANE" -E || :
         tmux resize-pane -t "$TMUX_PANE" -y 5
     fi
 
+    first_line_id="$( get_id "$first_line" )"
+    printf "\033]2;%s\033\\" "$first_line_id"
     exec_cmd "$first_line"
 fi
