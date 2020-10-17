@@ -231,6 +231,15 @@ then
 else
     if [ -n "$rest_lines" ]
     then
+        prev_panel_border_status="$( tmux show -pqv pane-border-status )"
+        prev_panel_border_format="$( tmux show -pqv pane-border-format )"
+        trap '
+            tmux set -p pane-border-status "$prev_panel_border_status"
+            tmux set -p pane-border-format "$prev_panel_border_format"
+        ' INT EXIT TERM
+        tmux set -p pane-border-status top
+        tmux set -p pane-border-format ' #{pane_index} #{pane_title} '
+
         printf "%s" "$rest_lines" |
             while read -r line
             do
