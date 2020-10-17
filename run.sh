@@ -240,7 +240,7 @@ else
         tmux set -p pane-border-status top
         tmux set -p pane-border-format ' #{pane_index} #{pane_title} '
 
-        printf "%s" "$rest_lines" |
+        printf "%s\n" "$rest_lines" |
             while read -r line
             do
                 id="$( get_id "$line" )"
