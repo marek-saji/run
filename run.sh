@@ -5,6 +5,17 @@ set -e
 # TODO Accept file as an argument -- either TSV or package.json
 # TODO Use TASKS_TSV only if tasks.tsv is not present
 
+log ()
+{
+    if [ -n "$VERBOSE" ]
+    then
+        msg="$1"
+        shift
+        # shellcheck disable=SC2059
+        printf "$msg\n" "$@"
+    fi
+}
+
 print_help ()
 {
     printf "Task runner with interactive selection.\n\n"
@@ -177,6 +188,10 @@ then
 
 fi
 
+log "SEQ =\n%s" "$choice_seq"
+log "FIRST =\n%s" "$first_line"
+log "REST_LINES =\n%s" "$rest_lines"
+
 if [ -n "$choice_seq" ]
 then
     printf "%s\n" "$choice_seq" |
@@ -184,6 +199,7 @@ then
         do
             id="$( get_id "$line" )"
             cmd="$( get_cmd "$line" )"
+            log "SEQ: %s" "$id"
             printf "\n%s\n" "$id"
             if [ "$TMUX_PANE" ]
             then
@@ -195,6 +211,8 @@ fi
 
 if [ -n "$rest_lines" ] && [ -z "$TMUX_PANE" ]
 then
+    log "No tmux detected - using concurrently"
+
     names="$( printf "%s\n" "$choice" | cut -f1 | paste -sd, )"
     colours="$( printf "%s\n" "$choice" | cut -f2 | paste -sd, )"
     set --
@@ -218,6 +236,7 @@ else
             do
                 id="$( get_id "$line" )"
                 cmd="$( get_cmd "$line" )"
+                log "REST: %s" "$id"
                 tmux split-window -d -t "$TMUX_PANE" -c "$PWD" -h \
                     "$SHELL" -$-xc "printf \"\033]2;%s\033\\\\\" '$id' ; $cmd || exec $SHELL -l"
             done
@@ -226,6 +245,7 @@ else
     fi
 
     first_line_id="$( get_id "$first_line" )"
+    log "FIRST: %s" "$first_line_id"
     printf "\033]2;%s\033\\" "$first_line_id"
     exec_cmd "$first_line"
 fi
