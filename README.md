@@ -1,6 +1,8 @@
 @saji/run
 =========
 
+📢 **No longer actively maintained.**
+
 Task runner with interactive selection.
 
 Run in directory with `tasks.tsv` or with `TASKS_TSV` environment variable set. Falls back to using npm scripts.
